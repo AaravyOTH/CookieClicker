@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.constraintlayout.widget.Constraints;
+import androidx.core.view.ViewCompat;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //Sets Views
+
         //Grandma
         grandma = new ImageView(this);
         grandma.setId(View.generateViewId());
@@ -58,13 +60,20 @@ public class MainActivity extends AppCompatActivity {
         farmPrice = findViewById(R.id.textView_farmCost);
 
         //
+
         //OTHER
         subLayout = findViewById(R.id.subLayout);
         mainLayout = findViewById(R.id.mainLayout);
         oreo = findViewById(R.id.imageView);
         scoreText = findViewById(R.id.textView_score);
         //
+
         //end of Views
+
+        //RUN BACKGROUND ANIMATION
+
+        //
+
 
         //Constraints
         ConstraintLayout.LayoutParams lp = new Constraints.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT,ConstraintLayout.LayoutParams.WRAP_CONTENT);
@@ -102,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
         //
         cs2.applyTo(mainLayout);
 
+
         //Animation For OREO
         final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.8f,1.0f,0.8f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
         scaleAnimation1.setDuration(40);
@@ -119,9 +129,10 @@ public class MainActivity extends AppCompatActivity {
         oreo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                makeStar();
+                makeFloater();
 
-                int temp = score.incrementAndGet();
+                score.incrementAndGet();
+
                 v.startAnimation(scaleAnimation1);
                 if(scaleAnimation1.hasEnded()){
                     v.startAnimation(scaleAnimation);
@@ -158,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                 subLayout.addView(temp);
                 temp.startAnimation(fadeIn);
                 grandmaCost = 1+ (grandmaCost + (2 * numOfGrandmas)) ;
-                grandmaPrice.setText("Grandma:" + String.valueOf(grandmaCost));
+                grandmaPrice.setText("Grandma: " + String.valueOf(grandmaCost));
                 isGrandmaAdded = false;
 
             }
@@ -189,8 +200,9 @@ public class MainActivity extends AppCompatActivity {
                 temp.setMaxHeight(100);
                 temp.setMaxWidth(100);
                 subLayout.addView(temp);
+                temp.startAnimation(fadeIn);
                 farmCost = farmCost +  (2 * numOfFarms) ;
-                farmPrice.setText(String.valueOf(farmCost));
+                farmPrice.setText("Farm" + String.valueOf(farmCost));
                 isFarmAdded = false;
             }
         });
@@ -216,6 +228,22 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         t.scheduleAtFixedRate(tt,0,50);
+
+        //Runs Animated Background
+        TimerTask backgroundRunner = new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        background();
+
+                    }
+                });
+
+            }
+        };
+        back.scheduleAtFixedRate(backgroundRunner,0,300);
         //
     }//END of OnCreate
 
@@ -223,6 +251,8 @@ public class MainActivity extends AppCompatActivity {
 
 //Timer for Score Counter
     Timer t = new Timer();
+    Timer back = new Timer();
+
 //
 
     //Adds Grandma to Top Of Screen And Plays Animation
@@ -230,9 +260,9 @@ public class MainActivity extends AppCompatActivity {
         if(!isGrandmaAdded) {
             grandma.setAdjustViewBounds(true);
 
-            final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.8f,1.0f,0.8f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
+            final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.5f,1.0f,0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
             scaleAnimation1.setDuration(80);
-            final ScaleAnimation scaleAnimation = new ScaleAnimation(1.0f,1.6f,1.0f,1.6f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
+            final ScaleAnimation scaleAnimation = new ScaleAnimation(1.0f,1.7f,1.0f,1.7f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
             scaleAnimation.setDuration(160);
             mainLayout.addView(grandma);
             grandma.startAnimation(scaleAnimation1);
@@ -282,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                int temp = score.incrementAndGet();
+                score.incrementAndGet();
 
             }
 
@@ -301,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Makes element that shows up onClick of OREO
-    public void makeStar(){
+    public void makeFloater(){
         final ImageView imageView = new ImageView(this);
         imageView.setId(View.generateViewId());
         imageView.setImageResource(R.drawable.star);
@@ -345,12 +375,58 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    private int dpToPx(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return Math.round((float)dp * density);
+    public void background(){
+        final ImageView imageView = new ImageView(this);
+        imageView.setId(View.generateViewId());
+        imageView.setImageResource(R.drawable.oreo);
+
+        ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        imageView.setLayoutParams(layoutParams);
+        imageView.setAdjustViewBounds(true);
+        imageView.setMaxHeight(200);
+        imageView.setMaxWidth(200);
+        mainLayout.addView(imageView);
+        ViewCompat.setZ(imageView, -1);
+
+        final ConstraintSet constraintSet = new ConstraintSet();
+        constraintSet.clone(mainLayout);
+
+        constraintSet.connect(imageView.getId(), ConstraintSet.BOTTOM, mainLayout.getId(), constraintSet.BOTTOM);
+        constraintSet.connect(imageView.getId(), ConstraintSet.TOP, mainLayout.getId(), constraintSet.TOP);
+        constraintSet.connect(imageView.getId(), ConstraintSet.LEFT, mainLayout.getId(), constraintSet.LEFT);
+        constraintSet.connect(imageView.getId(), ConstraintSet.RIGHT, mainLayout.getId(), constraintSet.RIGHT);
+
+        constraintSet.setHorizontalBias(imageView.getId(), touchX);
+
+        constraintSet.setHorizontalBias(imageView.getId(), (float)(Math.random()*2));
+
+        constraintSet.applyTo(mainLayout);
+        TranslateAnimation translateAnimation = new TranslateAnimation(imageView.getX(),imageView.getX(),-1200,1200);
+        translateAnimation.setDuration((int)(Math.random()*4000)+2000);
+        imageView.startAnimation(translateAnimation);
+
+        translateAnimation.setAnimationListener(new Animation.AnimationListener() {
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                mainLayout.removeView(imageView);
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
     }
-
-    //
-
+    //TODO: fix Grandma and Farm Constraints
+    //TODO:Fix Grandma and Farm sizes in Bottom Linear Layout
+    //TODO:Add One More Addon
+    //TODO:Fix Oreo Animation so it works while spinning
 
 }

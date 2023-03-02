@@ -5,6 +5,7 @@
     android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/holo_blue_bright"
     tools:context=".MainActivity">
 
     <ImageView
@@ -21,20 +22,25 @@
         android:id="@+id/subLayout"
         android:layout_width="413dp"
         android:layout_height="0dp"
+        android:layout_marginTop="60dp"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView"
-        app:layout_constraintVertical_bias="0.958"
-        android:orientation="horizontal"></LinearLayout>
+        app:layout_constraintVertical_bias="0.958"></LinearLayout>
 
     <TextView
         android:id="@+id/textView_score"
         android:layout_width="200dp"
         android:layout_height="40dp"
         android:layout_marginStart="104dp"
-        android:layout_marginTop="64dp"
+
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/oreofont"
         android:gravity="center|center_vertical"
         android:text="0"
+
+        android:textSize="40sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -42,9 +48,12 @@
         android:id="@+id/textView_grandmaCost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        android:layout_marginTop="132dp"
+        android:layout_marginStart="32dp"
+
+        android:layout_marginTop="176dp"
+        android:fontFamily="@font/oreofont"
         android:text="Grandma: 5"
+        android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -52,9 +61,28 @@
         android:id="@+id/textView_farmCost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:layout_marginTop="132dp"
+        android:layout_marginStart="40dp"
+
+        android:layout_marginTop="176dp"
+        android:layout_marginEnd="32dp"
+        android:fontFamily="@font/oreofont"
         android:text="Farm: 50"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/textView_grandmaCost"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="132dp"
+
+        android:fontFamily="@font/oreofont"
+        android:text="PRICES"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
