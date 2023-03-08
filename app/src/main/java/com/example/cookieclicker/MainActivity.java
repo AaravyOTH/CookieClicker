@@ -6,7 +6,9 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.constraintlayout.widget.Constraints;
 import androidx.core.view.ViewCompat;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,32 +16,40 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
-    ImageView oreo;
-    int numOfGrandmas = 0, numOfFarms = 0;
-    int grandmaCost = 5, farmCost = 50;
-    TextView grandmaPrice, farmPrice;
+    ImageView oreo, grandma, farm, milkPortal;
+    int amountForAscending = 1000;
+    int numOfGrandmas = 0, numOfFarms = 0, numOfMilkPortals = 0;
+    int grandmaCost = 5, farmCost = 50,  milkPortalCost = 200;
+    TextView grandmaPrice, farmPrice, milkPortalPrice, scoreText, ascendText;
+    boolean farmTemp = true;
     float touchX;
     float touchY;
-    int numForViewAdding = 0;
-    boolean canBuyGrandma = false;
-    TextView scoreText;
-    LinearLayout subLayout;
+    int timesAscended = 0;
+AtomicInteger clickAmount = new AtomicInteger(1);
+    LinearLayout subLayout, topLayout;
     ConstraintLayout mainLayout;
-    ImageView grandma;
-    ImageView farm;
+
+    Button ascend;
+    boolean touchInsideOreo = false;
     boolean isGrandmaAdded = false;
     boolean isFarmAdded = false;
+    int amountClicked = 10000;
+    boolean isMilkPortalAdded = false;
     AtomicInteger score = new AtomicInteger(0);
-
+    boolean temp = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,82 +71,107 @@ public class MainActivity extends AppCompatActivity {
 
         //
 
-        //OTHER
+        //Milk Portal
+        milkPortal = new ImageView(this);
+        milkPortal.setId(View.generateViewId());
+        milkPortal.setImageResource(R.drawable.milkportal);
+        milkPortalPrice = findViewById(R.id.textView_milkPortal);
+
+        //Layouts
         subLayout = findViewById(R.id.subLayout);
         mainLayout = findViewById(R.id.mainLayout);
+        topLayout = findViewById(R.id.topSubLayout);
+        //
+
+        //Other
         oreo = findViewById(R.id.imageView);
+
         scoreText = findViewById(R.id.textView_score);
+
+        ascend = findViewById(R.id.Button_reset);
+        ascendText = findViewById(R.id.textView_Ascend);
         //
 
         //end of Views
 
-        //RUN BACKGROUND ANIMATION
+        ascendText.setText("Cookies  for  Click  Upgrade:  " + amountForAscending);
 
         //
 
+        List<producerThread> threadList = new ArrayList<>();
 
+        final ScaleAnimation animationOut = new ScaleAnimation(1.0f,0.1f,1.0f,0.1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
+        animationOut.setDuration(500);
         //Constraints
-        ConstraintLayout.LayoutParams lp = new Constraints.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT,ConstraintLayout.LayoutParams.WRAP_CONTENT);
-        ConstraintSet cs = new ConstraintSet();
-        ConstraintSet cs2 = new ConstraintSet();
-
-
-        cs.clone(mainLayout);
-        cs2.clone(mainLayout);
-
-        grandma.setLayoutParams(lp);
-        grandma.setAdjustViewBounds(true);
-        grandma.setMaxHeight(300);
-        grandma.setMaxWidth(300);
-        // Grandma constraints
-        cs.connect(grandma.getId(), ConstraintSet.TOP, mainLayout.getId(), ConstraintSet.TOP, 200);
-        cs.connect(grandma.getId(), ConstraintSet.LEFT, mainLayout.getId(), ConstraintSet.LEFT, 200);
-        cs.connect(grandma.getId(), ConstraintSet.RIGHT, mainLayout.getId(), ConstraintSet.RIGHT);
-        cs.setVerticalBias(grandma.getId(), .2f);
-        cs.setHorizontalBias(grandma.getId(), .1f);
-        cs.applyTo(mainLayout);
-
-        // Farm constraints
-        farm.setLayoutParams(lp);
-        farm.setAdjustViewBounds(true);
-        farm.setMaxHeight(300);
-        farm.setMaxWidth(300);
-
-        // Grandma constraints
-        cs2.connect(farm.getId(), ConstraintSet.TOP, mainLayout.getId(), ConstraintSet.TOP, 200);
-        cs2.connect(farm.getId(), ConstraintSet.LEFT, mainLayout.getId(), ConstraintSet.LEFT, 800);
-        cs2.connect(farm.getId(), ConstraintSet.RIGHT, mainLayout.getId(), ConstraintSet.RIGHT);
-        cs2.setVerticalBias(farm.getId(), .4f);
-        cs2.setHorizontalBias(farm.getId(), .4f);
-        //
-        cs2.applyTo(mainLayout);
-
 
         //Animation For OREO
-        final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.8f,1.0f,0.8f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
-        scaleAnimation1.setDuration(40);
+        final ScaleAnimation oreoAnimation1 = new ScaleAnimation(1.0f,0.8f,1.0f,0.8f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
+        oreoAnimation1.setDuration(40);
 
-        final ScaleAnimation scaleAnimation = new ScaleAnimation(1.0f,1.6f,1.0f,1.6f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
-        scaleAnimation.setDuration(120);
+        final ScaleAnimation oreoAnimation = new ScaleAnimation(1.0f,1.6f,1.0f,1.6f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
+        oreoAnimation.setDuration(120);
 
         Animation rotateAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate);
         oreo.startAnimation(rotateAnimation);
 
         //
+        Animation rotatefast = AnimationUtils.loadAnimation(this, R.anim.rotatefast);
 
 
+
+
+        ascend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(score.get() > amountForAscending-1){
+                    timesAscended++;
+                    clickAmount.incrementAndGet();
+                    amountForAscending = amountForAscending + timesAscended * 500;
+                }
+                for (producerThread thread : threadList) {
+                    thread.stopThread();
+                    score.set(0);
+                    scoreText.setText("0");
+                }
+                Toast toast = Toast.makeText(getApplicationContext(), "Ascending...", Toast.LENGTH_LONG);
+                toast.show();
+                threadList.clear();
+                score.set(0);
+                scoreText.setText("0");
+                subLayout.removeAllViewsInLayout();
+                grandmaCost = 5;
+                farmCost = 50;
+                milkPortalCost = 200;
+                ascendText.setText("Cookies for Click Upgrade: " + amountForAscending);
+                isGrandmaAdded = false;
+                isFarmAdded = false;
+                isMilkPortalAdded = false;
+                numOfGrandmas = 0;
+                numOfMilkPortals = 0;
+                numOfFarms = 0;
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        score.set(0);
+
+                    }
+                }, 3500);
+            }
+
+        });
         //OREO ON CLICK
         oreo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 makeFloater();
+                score.addAndGet(clickAmount.get());
 
-                score.incrementAndGet();
-
-                v.startAnimation(scaleAnimation1);
-                if(scaleAnimation1.hasEnded()){
-                    v.startAnimation(scaleAnimation);
+                v.startAnimation(oreoAnimation1);
+                if(oreoAnimation1.hasEnded()){
+                    v.startAnimation(oreoAnimation);
                 }
+
             }
         });
         //
@@ -146,31 +181,40 @@ public class MainActivity extends AppCompatActivity {
         grandma.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("grandma", "it clicked!");
+                //
                 final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.1f,1.0f,0.1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
                 scaleAnimation1.setDuration(500);
                 final ScaleAnimation fadeIn = new ScaleAnimation(0.1f,1.0f,0.1f,1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
                 fadeIn.setDuration(500);
                 v.startAnimation(scaleAnimation1);
+                //
 
                 numOfGrandmas++;
-                    score.set(score.get() - 5);
+                    score.set(score.get() - grandmaCost);
+                producerThread newThread = new producerThread(3000);
+                threadList.add(newThread);
+                newThread.start();
 
-                producerThread myThread = new producerThread(3000);
-                    myThread.start();
-                mainLayout.removeView(grandma);
+
+                topLayout.removeView(grandma);
 
                 ImageView temp = new ImageView(MainActivity.this);
                 temp.setImageResource(R.drawable.grandma);
                 temp.setAdjustViewBounds(true);
-                temp.setMaxHeight(100);
                 temp.setMaxWidth(100);
+                temp.setMaxHeight(100);
+
+
 
                 subLayout.addView(temp);
                 temp.startAnimation(fadeIn);
-                grandmaCost = 1+ (grandmaCost + (2 * numOfGrandmas)) ;
-                grandmaPrice.setText("Grandma: " + String.valueOf(grandmaCost));
-                isGrandmaAdded = false;
+                grandmaCost = 1+ (grandmaCost + (3 * numOfGrandmas)) ;
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        isGrandmaAdded = false;
+                    }
+                }, 1500);
 
             }
 
@@ -182,52 +226,147 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 numOfFarms++;
+
+                score.set(score.get() - farmCost);
+
+                producerThread newThread = new producerThread(500);
+                threadList.add(newThread);
+                newThread.start();
+
+                final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.1f,1.0f,0.1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
+                scaleAnimation1.setDuration(500);
+
+                final ScaleAnimation fadeIn = new ScaleAnimation(0.1f,1.0f,0.1f,1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
+                fadeIn.setDuration(500);
+
+                v.startAnimation(scaleAnimation1);
+
+                topLayout.removeView(farm);
+
+                ImageView temp = new ImageView(MainActivity.this);
+                temp.setImageResource(R.drawable.farm);
+                temp.setAdjustViewBounds(true);
+                temp.setMaxWidth(100);
+                temp.setMaxHeight(100);
+
+                subLayout.addView(temp);
+                temp.startAnimation(fadeIn);
+
+                farmCost = farmCost +  (4 * numOfFarms) ;
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        isFarmAdded = false;
+                    }
+                }, 1500);
+            }
+        });
+        //
+        milkPortal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.1f,1.0f,0.1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
                 scaleAnimation1.setDuration(500);
                 final ScaleAnimation fadeIn = new ScaleAnimation(0.1f,1.0f,0.1f,1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
                 fadeIn.setDuration(500);
                 v.startAnimation(scaleAnimation1);
-                //  final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.1f,1.0f,0.1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
-                //  scaleAnimation1.setDuration(500);
-                score.set(score.get() - 50);
-                mainLayout.removeView(farm);
-                producerThread myFarmThread = new producerThread(500);
-                myFarmThread.start();
-                ImageView temp = new ImageView(MainActivity.this);
-                temp.setImageResource(R.drawable.farm);
-                temp.setAdjustViewBounds(true);
+                //
 
-                temp.setMaxHeight(100);
+                numOfMilkPortals++;
+                score.set(score.get() - milkPortalCost);
+
+
+                producerThread newThread = new producerThread(75);
+                threadList.add(newThread);
+                newThread.start();
+                topLayout.removeView(milkPortal);
+
+                ImageView temp = new ImageView(MainActivity.this);
+                temp.setImageResource(R.drawable.milkportal);
+                temp.setAdjustViewBounds(true);
                 temp.setMaxWidth(100);
+                temp.setMaxHeight(100);
+
+
+
                 subLayout.addView(temp);
                 temp.startAnimation(fadeIn);
-                farmCost = farmCost +  (2 * numOfFarms) ;
-                farmPrice.setText("Farm" + String.valueOf(farmCost));
-                isFarmAdded = false;
+                milkPortalCost = 1+ (milkPortalCost + (5 * numOfMilkPortals)) ;
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        isMilkPortalAdded = false;
+                    }
+                }, 1500);
             }
         });
-        //
-
         //SCORE COUNTER | Runs Continuously
         TimerTask tt = new TimerTask() {
             @Override
             public void run() {
-                scoreText.setText(String.valueOf(score));
+
                 runOnUiThread(new Runnable() {
+                    @SuppressLint("ResourceType")
                     @Override
                     public void run() {
+
+                        scoreText.setText(String.valueOf(score));
+                        grandmaPrice.setText("Grandma : " + grandmaCost);
+                        farmPrice.setText("Farm : " + farmCost);
+                        milkPortalPrice.setText("Milk Portal : " + milkPortalCost);
+                        if(score.get() < grandmaCost){
+                            try {
+                                topLayout.removeView(grandma);
+                                isGrandmaAdded = false;
+
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                        if(score.get() < farmCost) {
+                            try {
+                                //if(farmTemp == true){
+                                //topLayout.findViewById(R.drawable.farm).startAnimation(oreoAnimation1);
+                                // farmTemp = false;
+                                //   }
+                                //  if(farm.getAnimation().hasEnded()) {
+                                topLayout.removeView(farm);
+                                isFarmAdded = false;
+
+                                //farmTemp = true;
+
+
+
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                        if(score.get() < milkPortalCost){
+                            try{
+                                topLayout.removeView(milkPortal);
+                                isMilkPortalAdded = false;
+                            }catch(Exception e){
+                                e.printStackTrace();
+                            }
+                                   }
                         if (score.get() >= grandmaCost){
                             addGrandma();
                         }
                         if (score.get() >= farmCost){
                             addFarm();
                         }
+                        if(score.get() >= milkPortalCost){
+                            addMilkPortal();
+                        }
+
                     }
                 });
-
             }
+
+
+
         };
-        t.scheduleAtFixedRate(tt,0,50);
+        t.scheduleAtFixedRate(tt,0,100);
 
         //Runs Animated Background
         TimerTask backgroundRunner = new TimerTask() {
@@ -237,13 +376,12 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         background();
-
                     }
                 });
 
             }
         };
-        back.scheduleAtFixedRate(backgroundRunner,0,300);
+        back.scheduleAtFixedRate(backgroundRunner,0,150);
         //
     }//END of OnCreate
 
@@ -259,32 +397,50 @@ public class MainActivity extends AppCompatActivity {
     public void addGrandma(){
         if(!isGrandmaAdded) {
             grandma.setAdjustViewBounds(true);
-
+            getConstraints(grandma, 200, 100);
             final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.5f,1.0f,0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
             scaleAnimation1.setDuration(80);
             final ScaleAnimation scaleAnimation = new ScaleAnimation(1.0f,1.7f,1.0f,1.7f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
             scaleAnimation.setDuration(160);
-            mainLayout.addView(grandma);
+            topLayout.addView(grandma);
             grandma.startAnimation(scaleAnimation1);
             if(scaleAnimation1.hasEnded()){
                 grandma.startAnimation(scaleAnimation);
             }
             isGrandmaAdded = true;
         }
-
     }
     //
-
-    //Adds Farm to Top Of Screen And Plays Animation
-    public void addFarm(){
-        if(!isFarmAdded) {
-            farm.setAdjustViewBounds(true);
+    public void addMilkPortal(){
+        if(!isMilkPortalAdded) {
+            milkPortal.setAdjustViewBounds(true);
+            getConstraints(milkPortal, 200, 500);//DONT THINK I NEED THIS
 
             final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.8f,1.0f,0.8f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
             scaleAnimation1.setDuration(80);
             final ScaleAnimation scaleAnimation = new ScaleAnimation(0.8f,1.6f,1.0f,1.6f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
             scaleAnimation.setDuration(160);
-            mainLayout.addView(farm);
+            topLayout.addView(milkPortal);
+            milkPortal.startAnimation(scaleAnimation1);
+            if(scaleAnimation1.hasEnded()){
+                milkPortal.startAnimation(scaleAnimation);
+            }
+            isMilkPortalAdded = true;
+        }
+
+    }
+    //Adds Farm to Top Of Screen And Plays Animation
+    public void addFarm(){
+        if(!isFarmAdded) {
+            farm.setAdjustViewBounds(true);
+
+            getConstraints(farm, 200, 500);
+
+            final ScaleAnimation scaleAnimation1 = new ScaleAnimation(1.0f,0.8f,1.0f,0.8f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
+            scaleAnimation1.setDuration(80);
+            final ScaleAnimation scaleAnimation = new ScaleAnimation(0.8f,1.6f,1.0f,1.6f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
+            scaleAnimation.setDuration(160);
+            topLayout.addView(farm);
             farm.startAnimation(scaleAnimation1);
             if(scaleAnimation1.hasEnded()){
                 farm.startAnimation(scaleAnimation);
@@ -298,24 +454,23 @@ public class MainActivity extends AppCompatActivity {
     //Thread that Safely adds cookies that production Units have created
     public class producerThread extends Thread{
         private boolean isRunning = true;
-        private int durration;
+        private int duration;
 
-        public producerThread(int durration) {
-            this.durration = durration;
+        public producerThread(int duration) {
+            this.duration = duration;
         }
         @Override
         public void run() {
             while (isRunning) {
 
                 try {
-                    Thread.sleep(durration);
+                    Thread.sleep(duration);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+
                 score.incrementAndGet();
-
             }
-
         }
 
         public void stopThread() {
@@ -323,22 +478,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        touchX = event.getXPrecision();
-        touchY = event.getYPrecision();
-        return super.onTouchEvent(event);
-    }
 
     //Makes element that shows up onClick of OREO
     public void makeFloater(){
         final ImageView imageView = new ImageView(this);
         imageView.setId(View.generateViewId());
-        imageView.setImageResource(R.drawable.star);
+        int randomNum = (int) (Math.random() * 8) + 1;
+        switch (randomNum) {
+            case 1:
+                imageView.setImageResource(R.drawable.oreo1);
+                break;
+            case 2:
+                imageView.setImageResource(R.drawable.oreo2);
+                break;
+            case 3:
+                imageView.setImageResource(R.drawable.oreo3);
+                break;
+            case 4:
+                imageView.setImageResource(R.drawable.oreo4);
+                break;
+            case 5:
+                imageView.setImageResource(R.drawable.oreo5);
+                break;
+            case 6:
+                imageView.setImageResource(R.drawable.oreo6);
+                break;
+            case 7:
+                imageView.setImageResource(R.drawable.oreo7);
+                break;
+            case 8:
+                imageView.setImageResource(R.drawable.oreo8);
+                break;
+            default:
+                imageView.setImageResource(R.drawable.oreo1);
+                break;
+        }
+
 
         ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
         imageView.setLayoutParams(layoutParams);
-
+        imageView.setAdjustViewBounds(true);
+        imageView.setMaxHeight(100);
+        imageView.setMaxWidth(200);
         mainLayout.addView(imageView);
 
         final ConstraintSet constraintSet = new ConstraintSet();
@@ -349,11 +530,11 @@ public class MainActivity extends AppCompatActivity {
         constraintSet.connect(imageView.getId(), ConstraintSet.LEFT, mainLayout.getId(), constraintSet.LEFT);
         constraintSet.connect(imageView.getId(), ConstraintSet.RIGHT, mainLayout.getId(), constraintSet.RIGHT);
 
-        constraintSet.setHorizontalBias(imageView.getId(), touchX);
+        constraintSet.setHorizontalBias(imageView.getId(), touchX / mainLayout.getWidth());
 
         constraintSet.applyTo(mainLayout);
-        float randomFloat = (float) (Math.random());
-        TranslateAnimation translateAnimation = new TranslateAnimation(touchX+80,touchX + 90/*+ randomFloat*/,touchY,touchY+ -50);
+        int randomXStart = (int) (Math.random() * 201) - 100;
+        TranslateAnimation translateAnimation = new TranslateAnimation(425 + randomXStart,425 - randomXStart,300,-425);
         translateAnimation.setDuration((int)(Math.random()*1000)+500);
         imageView.startAnimation(translateAnimation);
 
@@ -399,7 +580,6 @@ public class MainActivity extends AppCompatActivity {
         constraintSet.setHorizontalBias(imageView.getId(), touchX);
 
         constraintSet.setHorizontalBias(imageView.getId(), (float)(Math.random()*2));
-
         constraintSet.applyTo(mainLayout);
         TranslateAnimation translateAnimation = new TranslateAnimation(imageView.getX(),imageView.getX(),-1200,1200);
         translateAnimation.setDuration((int)(Math.random()*4000)+2000);
@@ -424,9 +604,41 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    //TODO: fix Grandma and Farm Constraints
-    //TODO:Fix Grandma and Farm sizes in Bottom Linear Layout
-    //TODO:Add One More Addon
-    //TODO:Fix Oreo Animation so it works while spinning
 
+    public void removeView(ImageView imageView){
+        final ScaleAnimation animationForRemoveView = new ScaleAnimation(1.0f,1.5f,1.0f,1.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
+        animationForRemoveView.setDuration(200);
+
+    //     imageView.startAnimation(scaleAnimation1);
+    //    while(scaleAnimation1.hasEnded()!= true){
+
+        //}
+
+            topLayout.removeView(imageView);
+    //    }catch (Exception e){
+     //       e.printStackTrace();
+     //   }
+    }
+    public void getConstraints(ImageView imageView, int marginTop, int marginLeft){
+        ConstraintLayout.LayoutParams lp = new Constraints.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT,ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        ConstraintSet cs = new ConstraintSet();
+        imageView.setAdjustViewBounds(true);
+
+        cs.clone(mainLayout);
+
+        imageView.setLayoutParams(lp);
+        //imageView.setMaxHeight(300);
+        //imageView.setMaxWidth(300);
+        cs.connect(imageView.getId(), ConstraintSet.TOP, mainLayout.getId(), ConstraintSet.TOP, marginTop);
+        cs.connect(imageView.getId(), ConstraintSet.LEFT, mainLayout.getId(), ConstraintSet.LEFT, marginLeft);
+        cs.connect(imageView.getId(), ConstraintSet.RIGHT, mainLayout.getId(), ConstraintSet.RIGHT);
+        cs.connect(imageView.getId(), ConstraintSet.BOTTOM, mainLayout.getId(), ConstraintSet.BOTTOM);
+
+        cs.setHorizontalBias(imageView.getId(), .5f);
+        cs.setVerticalBias(imageView.getId(), .5f);
+
+        cs.applyTo(mainLayout);
+
+    }
+    //TODO:Fix Oreo Animation so it works while spinning
 }

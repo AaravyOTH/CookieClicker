@@ -8,26 +8,36 @@
     android:background="@android:color/holo_blue_bright"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:id="@+id/topSubLayout"
+        android:layout_width="407dp"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"></LinearLayout>
+
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="286dp"
         android:layout_height="300dp"
         android:layout_marginStart="60dp"
-        android:layout_marginTop="212dp"
+        android:layout_marginTop="272dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/oreo" />
 
     <LinearLayout
         android:id="@+id/subLayout"
-        android:layout_width="413dp"
-        android:layout_height="0dp"
+        android:layout_width="415dp"
+        android:layout_height="74dp"
         android:layout_marginTop="60dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView"
-        app:layout_constraintVertical_bias="0.958"></LinearLayout>
+        app:layout_constraintVertical_bias="1.0"></LinearLayout>
 
     <TextView
         android:id="@+id/textView_score"
@@ -54,6 +64,19 @@
         android:fontFamily="@font/oreofont"
         android:text="Grandma: 5"
         android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView_milkPortal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+
+        android:layout_marginTop="224dp"
+        android:fontFamily="@font/oreofont"
+        android:text="MilkPortal: 200"
+        android:textSize="15sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -85,4 +108,29 @@
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/Button_reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/oreofont"
+
+        android:layout_marginStart="156dp"
+        android:layout_marginTop="580dp"
+        android:text="Ascend?"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView_Ascend"
+        android:layout_width="400dp"
+        android:layout_height="wrap_content"
+
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:fontFamily="@font/oreofont"
+        android:gravity="center"
+        android:text="TextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Button_reset" />
 </androidx.constraintlayout.widget.ConstraintLayout>
