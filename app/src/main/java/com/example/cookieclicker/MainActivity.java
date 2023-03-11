@@ -640,5 +640,4 @@ AtomicInteger clickAmount = new AtomicInteger(1);
         cs.applyTo(mainLayout);
 
     }
-    //TODO:Fix Oreo Animation so it works while spinning
 }
