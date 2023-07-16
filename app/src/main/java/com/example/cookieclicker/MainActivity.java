@@ -34,22 +34,17 @@ public class MainActivity extends AppCompatActivity {
     int numOfGrandmas = 0, numOfFarms = 0, numOfMilkPortals = 0;
     int grandmaCost = 5, farmCost = 50,  milkPortalCost = 200;
     TextView grandmaPrice, farmPrice, milkPortalPrice, scoreText, ascendText;
-    boolean farmTemp = true;
     float touchX;
-    float touchY;
     int timesAscended = 0;
-AtomicInteger clickAmount = new AtomicInteger(1);
+    AtomicInteger clickAmount = new AtomicInteger(1);
     LinearLayout subLayout, topLayout;
     ConstraintLayout mainLayout;
 
     Button ascend;
-    boolean touchInsideOreo = false;
     boolean isGrandmaAdded = false;
     boolean isFarmAdded = false;
-    int amountClicked = 10000;
     boolean isMilkPortalAdded = false;
     AtomicInteger score = new AtomicInteger(0);
-    boolean temp = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -325,15 +320,10 @@ AtomicInteger clickAmount = new AtomicInteger(1);
                         }
                         if(score.get() < farmCost) {
                             try {
-                                //if(farmTemp == true){
-                                //topLayout.findViewById(R.drawable.farm).startAnimation(oreoAnimation1);
-                                // farmTemp = false;
-                                //   }
-                                //  if(farm.getAnimation().hasEnded()) {
+
                                 topLayout.removeView(farm);
                                 isFarmAdded = false;
 
-                                //farmTemp = true;
 
 
 
@@ -604,20 +594,12 @@ AtomicInteger clickAmount = new AtomicInteger(1);
             }
         });
     }
-
+//Unused Method, could be useful later however
     public void removeView(ImageView imageView){
         final ScaleAnimation animationForRemoveView = new ScaleAnimation(1.0f,1.5f,1.0f,1.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,0.5f);
         animationForRemoveView.setDuration(200);
-
-    //     imageView.startAnimation(scaleAnimation1);
-    //    while(scaleAnimation1.hasEnded()!= true){
-
-        //}
-
             topLayout.removeView(imageView);
-    //    }catch (Exception e){
-     //       e.printStackTrace();
-     //   }
+
     }
     public void getConstraints(ImageView imageView, int marginTop, int marginLeft){
         ConstraintLayout.LayoutParams lp = new Constraints.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT,ConstraintLayout.LayoutParams.WRAP_CONTENT);
@@ -627,8 +609,7 @@ AtomicInteger clickAmount = new AtomicInteger(1);
         cs.clone(mainLayout);
 
         imageView.setLayoutParams(lp);
-        //imageView.setMaxHeight(300);
-        //imageView.setMaxWidth(300);
+
         cs.connect(imageView.getId(), ConstraintSet.TOP, mainLayout.getId(), ConstraintSet.TOP, marginTop);
         cs.connect(imageView.getId(), ConstraintSet.LEFT, mainLayout.getId(), ConstraintSet.LEFT, marginLeft);
         cs.connect(imageView.getId(), ConstraintSet.RIGHT, mainLayout.getId(), ConstraintSet.RIGHT);
